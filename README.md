@@ -1,9 +1,20 @@
-# Elkhorn Slough: Public Repository 
+# Classifying Land Cover in the Elkhorn Slough: Shiny App
 
-This contains the code used for the analysis of water quality data in the Elkhorn Slough. The data are only available on our private Github (I have an SSH key available in case access is needed). 
+This repository contains the data and code to generate an R Shiny app that displays information about the Elkhorn Slough's water quality and land cover types for four sub-basins, including Azevedo Pond, Moro Cojo, East Bennett, and North Marsh. 
 
-We focus on five sites: North Marsh, Upper and Middle Azevedo, East Bennett, and Moro Cojo. All sites are tidally restricted, and are more likely for us to be able to pick up correlations between water quality and land use/management practices. 
+A brief description of the files: 
 
-Much of the code is derived from code provided to us from Kathleen Hicks, in preparation for her Masters thesis. 
+Folder 'app' contains ui.R and server.R, for the generation of the Shiny app. 
 
+Folder 'landcoverdata' contains Reclass_2007_2018.csv, which provides information on the percent land cover for each of our 10 different categories. These data are derived from the USDA product CropScape, but are reclassified to the limited number of categories. These data are used for the pie charts and bar graphs in the Shiny app. 
+
+MasterQuery2019subbasins.csv contains monthly water quality data for key nutrients in the four sub-basins of interest, from 1990-2018. These data are used to generate the water quality graphs. 
+
+Subbasins.shp (.dbf, .prj, .sbn, .sbx, .cpg, .shp.xml, .shx) provides the borders of the sub-basins in the Leaflet component of the Shiny app
+
+temp_precip.csv contains monthly precipitation and temperature data for the Elkhorn Slough, from 1990-2018. These data are used to generate the precipitation graphs. 
+
+testsp.json contains the spatial polygons for the land cover in the Elkhorn Slough, with data from 2007-2018. These data are integrated into Leaflet.
+
+Please email vandopmolly@gmail.com with any questions or comments on ways to improve the code. 
 
