@@ -2,6 +2,8 @@
 
 This repository contains the data and code to generate an R Shiny app that displays information about the Elkhorn Slough's water quality and land cover types for four sub-basins, including Azevedo Pond, Moro Cojo, East Bennett, and North Marsh. 
 
+Before running the app, make sure to change the directory. While it can be changed individually, it can also be done by adding your working directory to the list "workdir"--this is helpful when working with collaborators. Otherwise, just make sure all packages are installed, and the app is ready to run. 
+
 A brief description of the files: 
 
 Folder 'app' contains ui.R and server.R, for the generation of the Shiny app. 
