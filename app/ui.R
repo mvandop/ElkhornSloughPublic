@@ -3,12 +3,6 @@ library(shiny)
 library(sf)
 library(leaflet)
 
-workdir <- c("C:/Users/Molly/Box/ElkhornSlough/",
-             "/Users/anayahall/projects/ds421/elkslo/ElkhornSlough/"#,
-         #        "your local box folder",
-         )
-workdir <- workdir[dir.exists(workdir)]
-setwd(workdir)
 
 #### Header ####
 header <- dashboardHeader(title = "Elkhorn Slough")
