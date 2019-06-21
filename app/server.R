@@ -22,19 +22,33 @@ library(rgdal)
 
 #Set working directory
 workdir <- c("C:/Users/Molly/Box/ElkhornSlough/",
-             "/Users/anayahall/projects/ds421/elkslo/ElkhornSlough/"#,
+             "/Users/anayahall/projects/ds421/elkslo/ElkhornSloughPublic/"#,
              #        "your local box folder",
 )
 workdir <- workdir[dir.exists(workdir)]
 setwd(workdir)
 
+# lists used throughout server
+# categories of landcover
+landCoverCategories = c("Developed", "Field Crops", "Forest/Shrubland", "Fruits & Veg" , 
+                        "Grass/Open Space", "Strawberries", "Tree Crops", "Wetlands")
+# colors used in landcover symbology
+landCoverSymbology <- c("gray54", "darkorange", "darkgreen", "chartreuse", 
+                        "darkolivegreen3",  "red2", "darkorchid3", "paleturquoise2", "gray54")
+#Tree crops, grass, forest, developed, open water, strawberries, fruits and veg, wetlands
+
+#Colors for leaflet
+pal <- colorNumeric(c("gray54", "darkolivegreen3", "red2", "darkorange","chartreuse",
+                      "darkgreen",  "paleturquoise2", "darkorchid3", "blue"), NULL)
+
+
 #Bring in Water Quality Data
 
-waterqual <- read_csv(paste0(workdir, "MasterQuery2019subbasins.csv")) 
+waterQual <- read_csv(paste0(workdir, "data/MasterQuery2019subbasins.csv")) 
 
 #Remove values from Azevedo North (just keep Azevedo Central)
 
-waterqual <- waterqual %>% filter(ESNERR_StCode %in% c("APC", "BSE", "MCS", "STB"))
+waterQual <- waterQual %>% filter(ESNERR_StCode %in% c("APC", "BSE", "MCS", "STB"))
 
 
 #ggplot theme for the quality graphs
@@ -48,11 +62,11 @@ theme_m <- theme(
   legend.key = element_blank())
 
 #Bring in data for precipitation -----
-precip <- read_csv(paste0(workdir, "temp_precip.csv"))
+precip <- read_csv(paste0(workdir, "data/temp_precip.csv"))
 
 ###Fixing data for Pie charts -----
 #Bring in land cover data 
-lc <- read_csv(paste0(workdir, "landcoverdata/Reclass_2007_2018.csv"))
+lc <- read_csv(paste0(workdir, "data/landcoverdata/Reclass_2007_2018.csv"))
 
 # split value type into two columns: metric and year
 lc$metric <- NA
@@ -83,27 +97,17 @@ blank_theme <- theme_minimal()+
     plot.title=element_text(size=14, face="bold")
   )
 
-# categories of landcover
-colcats = c("Developed", "Field Crops", "Forest/Shrubland", "Fruits & Veg" , 
-            "Grass/Open Space", "Strawberries", "Tree Crops", "Wetlands")
-# colors used in chippie's landcover symbology
-mycols <- c("gray54", "darkorange", "darkgreen", "chartreuse", 
-            "darkolivegreen3",  "red2", "darkorchid3", "paleturquoise2", "gray54")
-#Tree crops, grass, forest, developed, open water, strawberries, fruits and veg, wetlands
+
 
 ###Bring in data for leaflet -----
 #landuse
-testsp <- geojson_read("testsp.json", what = "sp")
+testsp <- geojson_read("data/testsp.json", what = "sp")
 
 #subbasinoutlines
-subbasin <- readOGR("Subbasins.shp", layer="Subbasins")
+subbasin <- readOGR("data/Subbasins.shp", layer="Subbasins")
 latlong <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 subbasin <- subbasin %>% spTransform(CRS(latlong))
 
-
-#Colors for leaflet
-pal <- colorNumeric(c("gray54", "darkolivegreen3", "red2", "darkorange","chartreuse",
-                      "darkgreen",  "paleturquoise2", "darkorchid3", "blue"), NULL)
 
 ###Server function-----
 server <- function(input, output, session) {
@@ -128,7 +132,7 @@ server <- function(input, output, session) {
                 color= "black", size = 4) +
       theme(axis.text.x=element_blank(), plot.title = element_text(hjust=0.5)) + 
       ggtitle(paste0(input$basinchoice, " ", input$yearchoice)) + 
-      scale_fill_manual(values = mycols, name = "Land Cover", labels = colcats)
+      scale_fill_manual(values = landCoverSymbology, name = "Land Cover", labels = landCoverCategories)
 
   })
   
@@ -138,7 +142,7 @@ server <- function(input, output, session) {
     plotdata <- lc_wide %>% filter(Location == input$basinchoice2, year >= min(input$year2), year <= max(input$year2)) 
     ggplot(plotdata, aes(fill=category, y=value, x=year)) +
       geom_bar(stat="identity", position="fill") +
-      scale_fill_manual(values = mycols, name = "Land Cover", labels = colcats) +
+      scale_fill_manual(values = landCoverSymbology, name = "Land Cover", labels = landCoverCategories) +
       ggtitle(paste(input$basinchoice2)) + labs(y = "Proportion of Sub-Basin", x = "Year") +
       theme_minimal() +
       theme(plot.title = element_text(hjust=0.5), text = element_text(size=20))
@@ -146,7 +150,7 @@ server <- function(input, output, session) {
   
   output$QualYear <- renderPlot({
     # draw the graph with the specified number of dates
-    subsetting <- subset(waterqual, Year == as.numeric(input$yearchoice)) %>% filter(Subbasin == input$basinchoice)
+    subsetting <- subset(waterQual, Year == as.numeric(input$yearchoice)) %>% filter(Subbasin == input$basinchoice)
     ggplot(subsetting, aes_string(x = "month", y = input$nutrientchoice)) + 
       geom_line(color = "coral3") + 
       ylab(paste0(input$nutrientchoice, " (mg/L)")) + 
@@ -163,7 +167,7 @@ server <- function(input, output, session) {
   
   output$QualLongTerm <- renderPlot({
     # draw the graph with the specified number of dates
-    subsetting <- waterqual %>% filter(Subbasin == input$basinchoice2, Year >= min(input$year2), Year <= max(input$year2))
+    subsetting <- waterQual %>% filter(Subbasin == input$basinchoice2, Year >= min(input$year2), Year <= max(input$year2))
     subsetting$Date <- as.Date(subsetting$Date, format = "%m/%d/%Y")
     ggplot(subsetting, aes_string(x = "Date", y = input$nutrientchoice2, group = 1)) + 
       geom_line(color = "coral3") + 
