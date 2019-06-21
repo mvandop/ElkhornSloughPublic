@@ -1,3 +1,11 @@
+#This ui script produces the layout and user inputs for the Elkhorn Slough Shiny web application
+
+# We set up three tabs of content: "Map", showing annual land use by sub-basin, as well as nutrient 
+#  trends over that span (User inputs include year, sub-basin, and nutrient). "Long term trends"
+#  show land use changes over time, as well as precipitation and water quality (User inputs include
+#  year range, sub-basin, and nutrient). "Links" link to the ESNERR website and the Github page 
+ 
+
 library(shinydashboard)
 library(shiny)
 library(sf)

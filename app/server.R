@@ -1,3 +1,11 @@
+#This server script produces the figures and content shown on the Elkhorn Slough Shiny web application
+
+#On the first tab of content: "Map", a leaflet map is produced, as well as a land cover pie chart and 
+#  water quality, given the subbasin, nutrient, and year inputs in the ui function
+#On the second tab: "Long Term Trends", a land cover bar graph, precipitation graph, and water quality 
+#  graph is generated, based on the year range, subbasin, and nutrient chosen. 
+
+#Load required packages
 library(shinydashboard)
 library(shiny)
 library(sf)
