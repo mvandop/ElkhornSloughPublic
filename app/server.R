@@ -20,13 +20,6 @@ library(ggplot2)
 library(scales)
 library(rgdal)
 
-#Set working directory
-workdir <- c("C:/Users/Molly/Box/ElkhornSlough/",
-             "/Users/anayahall/projects/ds421/elkslo/ElkhornSloughPublic/"#,
-             #        "your local box folder",
-)
-workdir <- workdir[dir.exists(workdir)]
-setwd(workdir)
 
 # lists used throughout server
 # categories of landcover
@@ -44,7 +37,7 @@ pal <- colorNumeric(c("gray54", "darkolivegreen3", "red2", "darkorange","chartre
 
 #Bring in Water Quality Data
 
-waterQual <- read_csv(paste0(workdir, "data/MasterQuery2019subbasins.csv")) 
+waterQual <- read_csv("../data/MasterQuery2019subbasins.csv") 
 
 #Remove values from Azevedo North (just keep Azevedo Central)
 
@@ -62,27 +55,27 @@ theme_m <- theme(
   legend.key = element_blank())
 
 #Bring in data for precipitation -----
-precip <- read_csv(paste0(workdir, "data/temp_precip.csv"))
+precip <- read_csv("../data/temp_precip.csv")
 
 ###Fixing data for Pie charts -----
 #Bring in land cover data 
-lc <- read_csv(paste0(workdir, "data/landcoverdata/Reclass_2007_2018.csv"))
+landCover <- read_csv("../data/landcoverdata/Reclass_2007_2018.csv")
 
 # split value type into two columns: metric and year
-lc$metric <- NA
-lc$year <- NA
+landCover$metric <- NA
+landCover$year <- NA
 
-lc$metric <- ifelse(grepl("Prop", lc$X1), 'Prop', 'Pixel')
-lc$year <- substr(lc$X1,nchar(lc$X1)-3, nchar(lc$X1))
+landCover$metric <- ifelse(grepl("Prop", landCover$X1), 'Prop', 'Pixel')
+landCover$year <- substr(landCover$X1,nchar(landCover$X1)-3, nchar(landCover$X1))
 
 # can get rid of concatenated value type column
-lc$X1 <- NULL
+landCover$X1 <- NULL
 
 # filter(str_detect(Activity, "Compost")
-lc_prop <- lc %>% filter(str_detect(metric, "Prop"))
+landCover_prop <- landCover %>% filter(str_detect(metric, "Prop"))
 
 #make wide
-lc_wide <- gather(lc_prop, "category", "value", -Location, -metric, -year)
+landCover_wide <- gather(landCover_prop, "category", "value", -Location, -metric, -year)
 
 ### Chart symbology
 
@@ -101,28 +94,19 @@ blank_theme <- theme_minimal()+
 
 ###Bring in data for leaflet -----
 #landuse
-testsp <- geojson_read("data/testsp.json", what = "sp")
+landUseJson <- geojson_read("../data/testsp.json", what = "sp")
 
 #subbasinoutlines
-subbasin <- readOGR("data/Subbasins.shp", layer="Subbasins")
-latlong <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-subbasin <- subbasin %>% spTransform(CRS(latlong))
+subbasin <- readOGR("../data/Subbasins.shp", layer="Subbasins")
+latLong <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+subbasin <- subbasin %>% spTransform(CRS(latLong))
 
 
 ###Server function-----
 server <- function(input, output, session) {
-  # Send a pre-rendered image, and don't delete the image after sending it
-  # output$landmap <- renderImage({
-  #   filename <- normalizePath(file.path(paste0("~/Downloads/Landcover_Layouts_2013_2018/Resized/Resize_", input$yearchoice, ".png")))
-  #   # Return a list containing the filename and alt text
-  #   list(src = filename,
-  #        alt = paste0("Image number", input$yearchoice))
-  #   
-  # }, deleteFile = FALSE)
-  
-  
-  output$LandPie <- renderPlot({
-    plotdata <- lc_wide %>% filter(Location == input$basinchoice, year == input$yearchoice) 
+
+  output$landPie <- renderPlot({
+    plotdata <- landCover_wide %>% filter(Location == input$basinChoice, year == input$yearChoice) 
     bp <- ggplot(plotdata, aes(x="", y = value, fill = category)) +
       geom_bar(width = 1, stat = "identity")
     # turn into pie
@@ -131,30 +115,30 @@ server <- function(input, output, session) {
                 position = position_stack(vjust = 0.5), 
                 color= "black", size = 4) +
       theme(axis.text.x=element_blank(), plot.title = element_text(hjust=0.5)) + 
-      ggtitle(paste0(input$basinchoice, " ", input$yearchoice)) + 
+      ggtitle(paste0(input$basinChoice, " ", input$yearChoice)) + 
       scale_fill_manual(values = landCoverSymbology, name = "Land Cover", labels = landCoverCategories)
 
   })
   
 
   
-  output$LandLongTerm <- renderPlot({
-    plotdata <- lc_wide %>% filter(Location == input$basinchoice2, year >= min(input$year2), year <= max(input$year2)) 
+  output$landLongTerm <- renderPlot({
+    plotdata <- landCover_wide %>% filter(Location == input$basinChoice2, year >= min(input$year2), year <= max(input$year2)) 
     ggplot(plotdata, aes(fill=category, y=value, x=year)) +
       geom_bar(stat="identity", position="fill") +
       scale_fill_manual(values = landCoverSymbology, name = "Land Cover", labels = landCoverCategories) +
-      ggtitle(paste(input$basinchoice2)) + labs(y = "Proportion of Sub-Basin", x = "Year") +
+      ggtitle(paste(input$basinChoice2)) + labs(y = "Proportion of Sub-Basin", x = "Year") +
       theme_minimal() +
       theme(plot.title = element_text(hjust=0.5), text = element_text(size=20))
   })
   
-  output$QualYear <- renderPlot({
+  output$qualYear <- renderPlot({
     # draw the graph with the specified number of dates
-    subsetting <- subset(waterQual, Year == as.numeric(input$yearchoice)) %>% filter(Subbasin == input$basinchoice)
-    ggplot(subsetting, aes_string(x = "month", y = input$nutrientchoice)) + 
+    subsetting <- subset(waterQual, Year == as.numeric(input$yearChoice)) %>% filter(Subbasin == input$basinChoice)
+    ggplot(subsetting, aes_string(x = "month", y = input$nutrientChoice)) + 
       geom_line(color = "coral3") + 
-      ylab(paste0(input$nutrientchoice, " (mg/L)")) + 
-      ggtitle(paste0(input$nutrientchoice, " (mg/L): ", input$yearchoice)) + 
+      ylab(paste0(input$nutrientChoice, " (mg/L)")) + 
+      ggtitle(paste0(input$nutrientChoice, " (mg/L): ", input$yearChoice)) + 
       theme_m + 
       scale_x_discrete(limits=c("Jan", "Feb", "Mar",
                                 "Apr", "May", "Jun",
@@ -165,14 +149,14 @@ server <- function(input, output, session) {
                                 "Jul", "", "",
                                 "", "", "Dec"))  })
   
-  output$QualLongTerm <- renderPlot({
+  output$qualLongTerm <- renderPlot({
     # draw the graph with the specified number of dates
-    subsetting <- waterQual %>% filter(Subbasin == input$basinchoice2, Year >= min(input$year2), Year <= max(input$year2))
+    subsetting <- waterQual %>% filter(Subbasin == input$basinChoice2, Year >= min(input$year2), Year <= max(input$year2))
     subsetting$Date <- as.Date(subsetting$Date, format = "%m/%d/%Y")
-    ggplot(subsetting, aes_string(x = "Date", y = input$nutrientchoice2, group = 1)) + 
+    ggplot(subsetting, aes_string(x = "Date", y = input$nutrientChoice2, group = 1)) + 
       geom_line(color = "coral3") + 
-      ylab(paste0(input$nutrientchoice2, " (mg/L)")) + 
-      ggtitle(paste0(input$nutrientchoice2, " (mg/L): ", input$basinchoice2, ", ", as.character(min(input$year2)), "-", as.character(max(input$year2)))) + 
+      ylab(paste0(input$nutrientChoice2, " (mg/L)")) + 
+      ggtitle(paste0(input$nutrientChoice2, " (mg/L): ", input$basinChoice2, ", ", as.character(min(input$year2)), "-", as.character(max(input$year2)))) + 
       theme_m  + 
       scale_x_date(labels = date_format("%Y"))
                    })
@@ -194,9 +178,9 @@ server <- function(input, output, session) {
   tiles_attr <- "© <a href='https://www.mapbox.com/map-feedback/'>Mapbox</a> Basemap © E McGlynn"
   
  #Leaflet function 
-  output$leafmap <- renderLeaflet({
-    chooseYear <- as.numeric(input$yearchoice)
-    testyear <- testsp[testsp@data$yeartest == chooseYear,]
+  output$leafMap <- renderLeaflet({
+    chooseYear <- as.numeric(input$yearChoice)
+    testyear <- landUseJson[landUseJson@data$yeartest == chooseYear,]
     leaflet() %>%
       addTiles(
         urlTemplate = tiles_cust,
@@ -218,9 +202,8 @@ server <- function(input, output, session) {
       addPolygons(data = testyear, stroke = FALSE, 
                   smoothFactor = 0.3, fillOpacity = 1, fillColor = ~pal(FID)) %>% 
       addPolygons(data = subbasin, fillOpacity = 0, color = "black", 
-                  popup = paste0(subbasin$Name, "<br>", "Land Use in ", input$yearchoice))
-       #addLegend(pal = pal, values = ~log10(pop), opacity = 1.0,
-      #           labFormat = labelFormat(transform = function(x) round(10^x)))
+                  popup = paste0(subbasin$Name, "<br>", "Land Use in ", input$yearChoice))
+
     
   }) #end of leaflet function
   

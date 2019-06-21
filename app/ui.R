@@ -47,7 +47,7 @@ body <- dashboardBody(
                   title = "Land Use in the Elkhorn Slough: Four Major Sub-Basins",
                   solidHeader = F,
                   background = "light-blue",
-                  leafletOutput("leafmap", height = 600))),
+                  leafletOutput("leafMap", height = 600))),
               # Right content bar
               column(width = 5,
                      box(width =NULL,
@@ -55,7 +55,7 @@ body <- dashboardBody(
                          # Select map data
                          #title = "Land Use (Choose Year)",
                          #for choices, 1st is for the menu, second for the legend
-                         selectInput(inputId = "yearchoice",
+                         selectInput(inputId = "yearChoice",
                                      label = "Land Use (Choose Year)",
                                      selectize = FALSE,
                                      choices = list(
@@ -78,7 +78,7 @@ body <- dashboardBody(
                          status = "primary", # Makes header blue
                          # Choose sub-basin
                          #for choices, 1st is for the menu, second for the legend
-                         selectInput(inputId = "basinchoice",
+                         selectInput(inputId = "basinChoice",
                                      label = "Sub-basin for Analysis",
                                      selectize = FALSE,
                                      choices = list(
@@ -92,14 +92,14 @@ body <- dashboardBody(
                      box(width = NULL, 
                          status = "primary",
                          solidHeader = T, title = "Land Use by Sub-Basin",
-                         plotOutput(outputId = "LandPie",
+                         plotOutput(outputId = "landPie",
                                     height = 250)),
                      
                      box(width = NULL,
                          status = "primary", # Makes header blue
                          # Choose sub-basin
                          #for choices, 1st is for the menu, second for the legend
-                         selectInput(inputId = "nutrientchoice",
+                         selectInput(inputId = "nutrientChoice",
                                      label = "Nutrient for Analysis",
                                      selectize = FALSE,
                                      choices = list(
@@ -111,7 +111,7 @@ body <- dashboardBody(
                      box(width = NULL, 
                          status = "primary",
                          solidHeader = T, title = "Water Quality by Sub-Basin",
-                         plotOutput(outputId = "QualYear",
+                         plotOutput(outputId = "qualYear",
                                     height = 200)
                      )))
     ),
@@ -124,13 +124,13 @@ body <- dashboardBody(
                            title = "Long Term Land Use in the Elkhorn Slough",
                            solidHeader = F,
                            background = "light-blue",
-                           plotOutput(outputId = "LandLongTerm",
+                           plotOutput(outputId = "landLongTerm",
                                       height = 300)), 
                        box(width = NULL, 
                            title = "Long Term Water Quality Patterns in the Elkhorn Slough",
                            solidHeader = F,
                            background = "light-blue",
-                           plotOutput(outputId = "QualLongTerm",
+                           plotOutput(outputId = "qualLongTerm",
                                       height = 300)),
                 
                box(width = NULL, 
@@ -153,7 +153,7 @@ body <- dashboardBody(
                            status = "primary", # Makes header blue
                            # Choose sub-basin
                            #for choices, 1st is for the menu, second for the legend
-                           selectInput(inputId = "basinchoice2",
+                           selectInput(inputId = "basinChoice2",
                                        label = "Sub-basin for Analysis",
                                        selectize = FALSE,
                                        choices = list(
@@ -169,7 +169,7 @@ body <- dashboardBody(
                            status = "primary", # Makes header blue
                            # Choose sub-basin
                            #for choices, 1st is for the menu, second for the legend
-                           selectInput(inputId = "nutrientchoice2",
+                           selectInput(inputId = "nutrientChoice2",
                                        label = "Nutrient for Analysis",
                                        selectize = FALSE,
                                        choices = list(
